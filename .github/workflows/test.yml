@@ -1,0 +1,38 @@
+name: Test action
+on: pull_request
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    env:
+      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    permissions:
+      contents: write
+      pull-requests: write
+    steps:
+      - uses: actions/checkout@v4
+      # Setup test
+      - name: Setup
+        run: date > foo.md
+      # execute test target code
+      - name: Exercise
+        # set step id for reference in later phases
+        id: exercise
+        # execurte generating pull request from local file
+        uses: ./
+        with:
+          message: Test
+      - name: Verify
+        # enable tracing option of Bash and test generated pull request 
+        run: |
+          set -x
+          test "${gh pr veiew "${BRANCH}" --json title --jq .title}" = "Test"
+        env:
+          BRANCH: ${{ steps.exercise.outputs.branch }}
+      # cleanup after test
+      - name: Teardown
+        if: ${{ always() }}
+        run: |
+          gh pr clone "${BRANCH}" || true
+          git push origin "${BRANCH}" --delete || true
+        env:
+          BRANCH: ${{ steps.exercise.outputs.branch }}
