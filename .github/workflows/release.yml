@@ -22,5 +22,5 @@ jobs:
         run: |
           git config --global user.name "${USERNAME}"
           git config --global user.email "${EMAIL}"
-          version="$(.github/scripts/bump.sh "${BUMP_LEVEL}")"
+          version="$(bash .github/scripts/bump.sh "${BUMP_LEVEL}")"
           gh release create "${version}" --title "${version}" --generate-notes
